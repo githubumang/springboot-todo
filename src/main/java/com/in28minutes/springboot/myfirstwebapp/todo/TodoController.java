@@ -3,15 +3,20 @@ package com.in28minutes.springboot.myfirstwebapp.todo;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.SessionAttributes;
+
 import jakarta.validation.Valid;
 
 @Controller
+@SessionAttributes("name")
 public class TodoController {
 
     private TodoService todoService;
@@ -23,14 +28,15 @@ public class TodoController {
 
     @RequestMapping("list-todos")
     public String listAllTodos(ModelMap model) {
-        List<Todo> todos = todoService.findByUsername("umang");
+        String userName = getLoggedInUsername();
+        List<Todo> todos = todoService.findByUsername(userName);
         model.addAttribute("todos", todos);
         return "listTodos";
     }
 
     @RequestMapping(value = "add-todo", method = RequestMethod.GET)
     public String showNewTodoPage(ModelMap model) {
-        String username = (String)model.get("name");
+        String username = getLoggedInUsername();
         Todo todo = new Todo(0, username, "", LocalDate.now(), false);
         model.put("todo", todo);
         return "addTodoPage";
@@ -42,7 +48,7 @@ public class TodoController {
             return "addTodoPage";
         }
 
-        String username = (String)model.get("name");
+        String username = getLoggedInUsername();
         todoService.addTodo( username, todo.getDescription(), todo.getTargetDate(), false);
         return "redirect:list-todos";
     }
@@ -67,6 +73,13 @@ public class TodoController {
         }
         todoService.updateTodo(todo);
         return "redirect:list-todos";
+    }
+
+    private String getLoggedInUsername() {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        return authentication.getName();
     }
 
 }
