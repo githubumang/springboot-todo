@@ -2,9 +2,14 @@ package com.in28minutes.springboot.myfirstwebapp.todo;
 
 import java.time.LocalDate;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import jakarta.validation.constraints.Size;
 
+@Entity
 public class Todo {
+
+    @Id
     private int id;
     private String username;
     @Size(min = 10, message = "*At least 10 characters requried")
